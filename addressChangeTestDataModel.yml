@@ -1,0 +1,235 @@
+test_data_model:
+  version: 1.0
+  market_scope: TX
+  description: >
+    Test personas and address data for AAA Address Change flow (Texas market).
+    Designed for AI-driven test generation with strict autocomplete enforcement
+    and deterministic outcomes.
+
+  # --------------------------------------------------
+  # Market Configuration
+  # --------------------------------------------------
+  market:
+    state: TX
+    default_zipcode: 75025
+
+  # --------------------------------------------------
+  # Address Pool (Real, Autocomplete-Compatible)
+  # --------------------------------------------------
+  address_pool:
+    TX:
+      residential:
+        - id: TX_RES_001
+          full_address: "4800 Eldorado Pkwy, Frisco, TX 75033"
+          street: "4800 Eldorado Pkwy"
+          city: "Frisco"
+          state: "TX"
+          zipcode: "75033" 
+          
+        - id: TX_RES_002
+          full_address: "6200 Stonebridge Dr, McKinney, TX 75070"
+          street: "6200 Stonebridge Dr"
+          city: "McKinney"
+          state: "TX"
+          zipcode: "75070"
+
+        - id: TX_RES_003
+          full_address: "8585 N Stemmons Fwy, Dallas, TX 75247"
+          street: "8585 N Stemmons Fwy"
+          city: "Dallas"
+          state: "TX"
+          zipcode: "75247"
+
+        - id: TX_RES_004
+          full_address: "1950 Market Center Blvd, Dallas, TX 75207"
+          street: "1950 Market Center Blvd"
+          city: "Dallas"
+          state: "TX"
+          zipcode: "75207"
+
+      mailing:
+        - id: TX_MAIL_001
+          full_address: "7919 Glenview Dr, Houston, TX 77061"
+          street: "7919 Glenview Dr"
+          city: "Houston"
+          state: "TX"
+          zipcode: "77061"
+          
+        - id: TX_MAIL_002
+          full_address: "553 Darley Oak Dr, Dripping Springs, TX 78620"
+          street: "553 Darley Oak Dr"
+          city: "Dripping Springs"
+          state: "TX"
+          zipcode: "78620"
+
+        - id: TX_MAIL_003
+          full_address: "132 Desert Zinnia Cv, San Marcos, TX 78666"
+          street: "132 Desert Zinnia Cv"
+          city: "San Marcos"
+          state: "TX"
+          zipcode: "78666"
+          
+        - id: TX_MAIL_004
+          full_address: "2121 Avenue of the Stars, Frisco, TX 75034"
+          street: "2121 Avenue of the Stars"
+          city: "Frisco"
+          state: "TX"
+          zipcode: "75034"
+
+  # --------------------------------------------------
+  # Test Personas (Pre-Provisioned Accounts)
+  # --------------------------------------------------
+  personas:
+
+    - persona_id: TX_MEMBERSHIP
+      description: Membership-only user
+      credentials:
+        username: tx_membership_user_01
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: false
+        home: false
+        condo: false
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: confirmation_page
+          mailing: confirmation_page
+          both: confirmation_page
+
+    - persona_id: TX_MEMBERSHIP_AUTO
+      description: Membership with auto policy
+      credentials:
+        username: tx_membership_auto_01
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: true
+        home: false
+        condo: false
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: confirmation_page
+          mailing: confirmation_page
+          both: confirmation_page
+
+    - persona_id: TX_MEMBERSHIP_HOME
+      description: Membership with home policy
+      credentials:
+        username: 252_00061250@aaa.com
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: false
+        home: true
+        condo: false
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: agent_contact_modal
+          mailing: confirmation_page
+          both: agent_contact_modal
+
+    - persona_id: TX_MEMBERSHIP_HOME_AUTO
+      description: Membership with home and auto policies
+      credentials:
+        username: 065_00030896@aaa.com
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: true
+        home: true
+        condo: false
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: agent_contact_modal
+          mailing: confirmation_page
+          both: agent_contact_modal
+
+    - persona_id: TX_MEMBERSHIP_CONDO
+      description: Membership with condo policy
+      credentials:
+        username: 252_00034091@aaa.com
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: false
+        home: false
+        condo: true
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: agent_contact_modal
+          mailing: confirmation_page
+          both: agent_contact_modal
+
+    - persona_id: TX_MEMBERSHIP_AUTO_CONDO
+      description: Membership with auto and condo policies
+      credentials:
+        username: 065_00116786@aaa.com
+        password: ${PASSWORD}
+      account_profile:
+        membership: true
+        auto: true
+        home: false
+        condo: true
+      policy_state:
+        allows_online_address_change: true
+      address_change:
+        supported_types: [residential, mailing, both]
+        address_source: address_pool
+        expected_outcomes:
+          residential: agent_contact_modal
+          mailing: confirmation_page
+          both: agent_contact_modal
+
+  # --------------------------------------------------
+  # Address Selection Strategy
+  # --------------------------------------------------
+  address_selection:
+    strategy: curated_pool
+    selection_mode: random_or_ai
+    autocomplete_required: true
+    input_behavior:
+      type_partial_street: true
+      wait_for_suggestions: true
+      select_exact_match: true
+
+  # --------------------------------------------------
+  # Global Rules & Guardrails
+  # --------------------------------------------------
+  rules:
+    - Address_must_match_market
+    - No_PO_Boxes
+    - Always_wait_for_autocomplete_results
+    - Do_not_generate_free_text_addresses
+    - Do_not_cross_markets
+
+  # --------------------------------------------------
+  # Flow Expectations (Derived)
+  # --------------------------------------------------
+  flow_expectations:
+    confirmation_page:
+      title: "Thank you for updating your address"
+      requires_confirmation_number: true
+
+    agent_contact_modal:
+      title_contains: "Agent will contact you"

@@ -1,0 +1,176 @@
+flow_name: AAA_Address_Change
+version: 1.1
+scope: UI_navigation_only
+markets:
+  supported:
+    - CA, PA, KY, NY, OH, WV, TX, MO, AR, KS, IL, IN, LA, MS, ME, NH, VT, AL, VA, NM, HI
+  behavior: identical_across_markets
+
+user_types:
+  - Membership
+  - Membership_Auto
+  - Membership_Home
+  - Membership_Auto_Home
+  - Membership_Condo
+  - Membership_Auto_Condo
+
+entry_point:
+  url: ADDRESS_CHANGE_URL
+  preconditions:
+    - User not authenticated OR authenticated
+  landing_behavior:
+    - Redirects to Login page with ZIP Code modal
+    - After successful login, user lands on Address_Selection_Page
+
+pages:
+
+  - id: Zip_Code_Modal
+    always_shown: true
+    purpose: Determine user market
+    actions:
+      - Enter_Zip_Code
+      - Click_Go
+    rules:
+      - Zip_code_must_match_market
+    next:
+      success: AAA_Login_Page
+      failure: Unable_To_Process_Page
+
+  - id: AAA_Login_Page
+    always_shown: true
+    purpose: Authenticate user
+    actions:
+      - Enter_Username
+      - Click_Next
+      - Enter_Password
+      - Click_Login
+    next:
+      success: Verify_Email_Page
+      failure: Unable_To_Process_Page
+
+  - id: Verify_Email_Page
+    always_shown: true
+    purpose: Verify user's email address
+    actions:
+      - Select_Email
+      - Click_Next
+      - Ask_Me_Later
+    next:
+      success: Address_Selection_Page
+
+  - id: Address_Selection_Page
+    always_shown: true
+    purpose: Select address to change
+    actions:
+      - Select_Address
+      - Click_Next
+      - Click_Back
+    next:
+      Next:
+        when_residential_or_both: Vehicle_Confirmation_Page
+        otherwise: New_Address_Page
+      Back: Verify_Email_Page
+
+  - id: Vehicle_Confirmation_Page
+    conditional: true
+    shown_when:
+      - Residential_address_change
+      - Mailing_and_Residential_change
+    applicable_user_types:
+      - Membership_Auto
+      - Membership_Auto_Home
+      - Membership_Auto_Condo
+    purpose: Confirm vehicle parking location
+    actions:
+      - Confirm_Vehicles_Parked_Yes
+      - Confirm_Vehicles_Parked_No
+      - Click_Next
+      - Click_Back
+    next:
+      Next: New_Address_Page
+      Back: Address_Selection_Page
+
+  - id: New_Address_Page
+    always_shown: true
+    purpose: Capture new address
+    actions:
+      - Enter_New_Address
+      - Select_Address_From_Autosuggest
+      - Click_Next
+      - Click_Back
+    rules:
+      - Address_must_be_residential
+      - Zip_code_must_match_market
+      - PO_Box_not_allowed
+    next:
+      Next: New_Address_Review_Page
+      Back:
+        when_vehicle_confirmation_shown: Vehicle_Confirmation_Page
+        otherwise: Address_Selection_Page
+
+  - id: New_Address_Review_Page
+    always_shown: true
+    purpose: Review and confirm new address
+    actions:
+      - Confirm_Address_Change
+      - Edit_Address
+      - Click_Back
+    next:
+      Confirm_Address_Change:
+        when_auto_policy_and_residential:
+          applicable_user_types:
+            - Membership_Auto
+            - Membership_Auto_Home
+            - Membership_Auto_Condo
+          target: Agent_Will_Contact_You_Modal
+        otherwise: Address_Change_Confirmation_Page
+      Edit_Address: New_Address_Page
+      Back: New_Address_Page
+
+  - id: Agent_Will_Contact_You_Modal
+    conditional: true
+    shown_when:
+      - Residential_address_change
+    applicable_user_types:
+      - Membership_Auto
+      - Membership_Auto_Home
+      - Membership_Auto_Condo
+    purpose: Inform user residential address change cannot be completed online
+    actions:
+      - Review_Details
+      - Click_Got_It
+    next:
+      Click_Got_It: Address_Selection_Page
+
+  - id: Address_Change_Confirmation_Page
+    always_shown: true
+    purpose: Confirm address update success
+    success_indicators:
+      - Page_Title: "Thank you for updating your address"
+      - New_Address_Displayed
+      - Confirmation_Number
+    actions:
+      - Return_To_My_Account
+    next:
+      Return_To_My_Account: Address_Selection_Page
+
+  - id: Unable_To_Process_Page
+    conditional: true
+    purpose: System error handling
+    url: ADDRESS_CHANGE_ERROR_URL
+    actions:
+      - Review_Error_Message
+      - Return_To_My_Account
+    next:
+      Return_To_My_Account: Address_Selection_Page
+
+non_goals:
+  - Backend_verification
+  - Email_confirmation_checks
+  - Payment_flows
+
+global_rules:
+  - Always_wait_for_page_load_and_redirection
+  - Do_not_assume_hidden_navigation
+  - Navigation_must_follow_defined_page_sequence
+  

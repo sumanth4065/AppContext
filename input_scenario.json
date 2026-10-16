@@ -1,0 +1,53 @@
+{
+  "context": {
+    "application": "AAA",
+    "feature": "Address Change",
+    "market": "TX",
+    "default_zipcode": "75025",
+    "navigation_contract_version": "1.1",
+    "test_data_model": "TX_Address_Change_Test_Data_Model",
+    "execution_mode": "ui",
+    "automation_framework": "Playwright",
+    "constraints": [
+      "Use only pages defined in the navigation contract",
+      "Do not invent navigation steps",
+      "Use address pool for address selection",
+      "Autocomplete-based address entry is mandatory",
+      "Address must be valid for TX market",
+      "Always include page-level assertions"
+    ]
+  },
+
+  "scenarios": [
+    {
+      "scenario_id": "TX_AC_S03",
+      "description": "Membership + Condo policy only - Success mailing address change",
+      "persona_id": "TX_MEMBERSHIP_CONDO",
+      "address_change": {
+        "address_type": "mailing",
+        "expected_outcome": "confirmation_page"
+      },
+      "validation_requirements": {
+        "verify_all_pages": true,
+        "verify_confirmation": true
+      }
+    }
+  ],
+
+  "expected_ai_output": {
+    "format": "stepwise_test_cases",
+    "include": [
+      "Preconditions",
+      "Step number",
+      "Action",
+      "Expected result",
+      "Page name"
+    ],
+    "exclusions": [
+      "Selectors",
+      "Implementation code",
+      "Backend validation",
+      "Email verification"
+    ]
+  }
+}
